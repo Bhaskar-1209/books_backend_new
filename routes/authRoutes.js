@@ -1,13 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const User = require("../models/Users");
+const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
 
-// Configure multer for profile image upload
-// Set up storage engine
+// Multer Storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/profiles/");
@@ -16,10 +15,9 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}-${file.originalname}`);
   },
 });
-
-// Initialize upload
 const upload = multer({ storage: storage });
-// SIGNUP
+
+// Signup
 router.post("/signup", async (req, res) => {
   const { name, email, password, role } = req.body;
   try {
@@ -37,7 +35,7 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// LOGIN
+// Login
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -54,11 +52,11 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// GET LOGGED-IN USER
+// Get Current User
 router.get("/me", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ msg: "Authorization header missing" });
+    if (!authHeader) return res.status(401).json({ msg: "No token provided" });
 
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -71,11 +69,11 @@ router.get("/me", async (req, res) => {
   }
 });
 
-// UPLOAD PROFILE IMAGE
+// Upload Profile Image
 router.put("/upload-profile", upload.single("profileImage"), async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ msg: "Authorization header missing" });
+    if (!authHeader) return res.status(401).json({ msg: "No token provided" });
 
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -91,11 +89,12 @@ router.put("/upload-profile", upload.single("profileImage"), async (req, res) =>
     res.status(500).json({ msg: "Upload failed", error: err.message });
   }
 });
-// ADMIN: GET ALL USERS
+
+// Admin - Get All Users
 router.get("/all-users", async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ msg: "Authorization header missing" });
+    if (!authHeader) return res.status(401).json({ msg: "No token provided" });
 
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
